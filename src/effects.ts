@@ -50,13 +50,40 @@ export class EntityEffects<T extends StoreModel> {
     .flatMap((action: Action) => {
       const entityName = extractEntityName(/^(.*)\/add$/, action.type);
       if (entityName !== null) {
-        return this._entityService.addEntity(
-          entityName,
-          (<AddAction<T>>action).payload
-        );
-        // .map(entity =>
-        //   getAction({ name: entityName }).getAddSuccessAction(entity)
-        // )
+        return this._entityService
+          .addEntity(entityName, (<AddAction<T>>action).payload)
+          .map(entity =>
+            getEntityAction({ name: entityName }).getAddSuccessAction(entity)
+          );
+      }
+      return Observable.empty();
+    });
+
+  @Effect()
+  editEntity = this._actions$
+    .filter((action: Action) => action.type.match(/^.*\/edit$/) !== null)
+    .flatMap((action: Action) => {
+      const entityName = extractEntityName(/^(.*)\/edit$/, action.type);
+      if (entityName !== null) {
+        return this._entityService
+          .editEntity(entityName, (<EditAction<T>>action).payload)
+          .map(entity =>
+            getEntityAction({ name: entityName }).getEditSuccessAction(entity)
+          );
+      }
+      return Observable.empty();
+    });
+  @Effect()
+  deleteEntity = this._actions$
+    .filter((action: Action) => action.type.match(/^.*\/delete$/) !== null)
+    .flatMap((action: Action) => {
+      const entityName = extractEntityName(/^(.*)\/delete$/, action.type);
+      if (entityName !== null) {
+        return this._entityService
+          .deleteEntity(entityName, (<DeleteAction<T>>action).payload)
+          .map(entity =>
+            getEntityAction({ name: entityName }).getDeleteSuccessAction(entity)
+          );
       }
       return Observable.empty();
     });
